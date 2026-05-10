@@ -1,0 +1,1330 @@
+---
+title: "Portfolio Homework Answers"
+format: html
+editor: visual
+---
+
+## Part A: Indexing, Subsetting and Defensive R
+
+### 1. Indexing with missing values
+
+```{r}
+x <- c(3.1, NA, 4.7, 2.9, NA, 5.0)
+```
+
+Task 1:
+
+```{r}
+x <- c(3.1, NA, 4.7, 2.9, NA, 5.0)
+which(is.na(x)) # Returns [1] 2 5
+```
+
+Task 2:
+
+```{r}
+x <- c(3.1, NA, 4.7, 2.9, NA, 5.0)
+x[!is.na(x)] # Returns [1] 3.1 4.7 2.9 5.0
+```
+
+Task 3 and Task 4:
+
+```{r}
+x <- c(3.1, NA, 4.7, 2.9, NA, 5.0)
+mean_of_non_missing <- mean(x, na.rm = TRUE)
+x[is.na(x)] <- mean_of_non_missing
+mean(x) # Returns [1] 3.925
+```
+
+### 2. Row/column selection with multiple conditions
+
+```{r}
+df <- data.frame(
+id = 1:8,
+site = c("A", "A", "B", "B", "A", "C", "C", "B"),
+treatment = c("control", "drug", "control", "drug", "drug", "control", "drug", "control"),
+score = c(12, 15, 9, 18, 14, 11, 20, 10)
+)
+```
+
+Task 1:
+
+```{r}
+df <- data.frame(
+  id = 1:8,
+  site = c("A", "A", "B", "B", "A", "C", "C", "B"),
+  treatment = c("control", "drug", "control", "drug", "drug", "control", "drug", "control"),
+  score = c(12, 15, 9, 18, 14, 11, 20, 10)
+)
+
+subset(df, site == "A" | site == "C") # Returns   id site treatment score
+1  1    A   control    12
+2  2    A      drug    15
+5  5    A      drug    14
+6  6    C   control    11
+7  7    C      drug    20
+```
+
+Task 2:
+
+```{r}
+df <- data.frame(
+  id = 1:8,
+  site = c("A", "A", "B", "B", "A", "C", "C", "B"),
+  treatment = c("control", "drug", "control", "drug", "drug", "control", "drug", "control"),
+  score = c(12, 15, 9, 18, 14, 11, 20, 10)
+)
+
+subset(df, treatment == "drug" & score >= 15) # Returns   id site treatment score
+2  2    A      drug    15
+4  4    B      drug    18
+7  7    C      drug    20
+```
+
+Task 3:
+
+```{r}
+df <- data.frame(
+  id = 1:8,
+  site = c("A", "A", "B", "B", "A", "C", "C", "B"),
+  treatment = c("control", "drug", "control", "drug", "drug", "control", "drug", "control"),
+  score = c(12, 15, 9, 18, 14, 11, 20, 10)
+)
+
+df2 <- subset(df, select = c("id", "treatment", "score"))
+
+df2 # Returns   id treatment score
+1  1   control    12
+2  2      drug    15
+3  3   control     9
+4  4      drug    18
+5  5      drug    14
+6  6   control    11
+7  7      drug    20
+8  8   control    
+```
+
+Task 4: The difference between "&" and "\|" is that "&" symbol is used as an AND comparison operator whereas "\|" is used as an OR comparison operator.
+
+### 3. Catching silent mistakes
+
+```{r}
+vals <- c("1", "2", "3", "4")
+```
+
+Task 1:
+
+```{r}
+numeric_check <- function(vals) {
+  if (is.numeric(vals)) {
+    mean(vals)
+  }
+  else {
+    message("Not numeric")
+  }
+}
+```
+
+Task 2:
+
+```{r}
+vals <- c("1", "2", "3", "4")
+
+numeric_check <- function(vals) {
+  if (is.numeric(vals)) {
+    mean(vals)
+  }
+  else {
+    converted_vals <- as.numeric(vals)
+  }
+}
+```
+
+Task 3:
+
+```{r}
+vals <- c("1", "2", "3", "4")
+
+numeric_check <- function(vals) {
+  if (is.numeric(vals)) {
+    mean(vals)
+  }
+  else {
+    converted_vals <- as.numeric(vals)
+    mean(converted_vals)
+  }
+}
+
+
+numeric_check(vals)
+```
+
+Task 4: The issue with silent coercion is that because R automatically converts data types to the most flexible type, it can lead to data being lost. It can also introduce errors such as "NA" which may lead to incorrect calculations
+
+## Part B: Data Types, Factors and Common Pifalls
+
+### Factors, ordering and reference levels
+
+```{r}
+grades <- c("merit", "pass", "distinction", "pass", "merit", "pass")
+```
+
+Task 1:
+
+```{r}
+grades <- c("merit", "pass", "distinction", "pass", "merit", "pass")
+
+ordered_grades <- factor(
+  grades,
+  levels = c("pass", "merit", "distinction"),
+  ordered = TRUE
+)
+
+ordered_grades # Returns [1] merit       pass        distinction pass        merit       pass       
+Levels: pass < merit < distinction
+```
+
+Task 2:
+
+```{r}
+grades <- c("merit", "pass", "distinction", "pass", "merit", "pass")
+
+ordered_grades <- factor(
+  grades,
+  levels = c("pass", "merit", "distinction"),
+  ordered = TRUE
+)
+
+levels(ordered_grades) # returns "Levels: pass < merit < distinction"
+
+is.ordered(ordered_grades) # returns "[1] TRUE"
+
+```
+
+Task 3:
+
+```{r}
+grades <- c("merit", "pass", "distinction", "pass", "merit", "pass")
+
+ordered_grades <- factor(
+  grades,
+  levels = c("pass", "merit", "distinction"),
+  ordered = TRUE
+)
+
+table(ordered_grades)
+```
+
+Task 4: Ordered factors allow for comparisons through the use of levels.Levels help understand R the structure of categorical levels. This means the statistical models can understand the relationship between the models and plots.
+
+### Date parsing and type checking
+
+```{r}
+dates_chr <- c("2026-01-05", "2026-01-12", "2026-02-01", "not_a_date")
+```
+
+Task 1:
+
+```{r}
+dates_chr <- c("2026-01-05", "2026-01-12", "2026-02-01", "not_a_date")
+
+converted_date <- as.Date(dates_chr) # returns "[1] "2026-01-05" "2026-01-12" "2026-02-01" NA "
+
+converted_date
+```
+
+Task 2:
+
+```{r}
+dates_chr <- c("2026-01-05", "2026-01-12", "2026-02-01", "not_a_date")
+
+converted_date <- as.Date(dates_chr)
+
+which(is.na(converted_date))  # returns "[1] 4"
+```
+
+Task 3:
+
+```{r}
+dates_chr <- c("2026-01-05", "2026-01-12", "2026-02-01", "not_a_date")
+
+converted_date <- as.Date(dates_chr)
+
+
+valid_min_dates <- min(converted_date, na.rm = TRUE) # returns "[1] "2026-01-05""
+valid_max_dates <- max(converted_date, na.rm = TRUE) # returns "[1] "2026-02-01""
+
+valid_max_dates - valid_min_dates # returns "Time difference of 27 days"
+```
+
+Task 4: Date parsing often creates NAs as not every element might be a date. If a value doesn't match the expected date format, R will not be able to convert it to a date format.
+
+### Coercion with mixed types in a date frame
+
+```{r}
+messy <- data.frame(
+sample_id = c("S1", "S2", "S3", "S4"),
+nitrate = c("12.1", "11.8", "missing", "13.0"),
+ph = c(6.2, 6.5, 6.1, 6.4),
+stringsAsFactors = FALSE
+)
+```
+
+Task 1:
+
+```{r}
+messy <- data.frame(
+  sample_id = c("S1", "S2", "S3", "S4"),
+  nitrate = c("12.1", "11.8", "missing", "13.0"),
+  ph = c(6.2, 6.5, 6.1, 6.4),
+  stringsAsFactors = FALSE
+)
+
+
+numeric_nitrate <- as.numeric(messy$nitrate)
+
+numeric_nitrate # returns "[1] 12.1 11.8   NA 13.0"
+```
+
+Task 2:
+
+```{r}
+sum(is.na(numeric_nitrate)) # returns "[1] 1"
+```
+
+Task 3:
+
+```{r}
+messy <- data.frame(
+  sample_id = c("S1", "S2", "S3", "S4"),
+  nitrate = c("12.1", "11.8", "missing", "13.0"),
+  ph = c(6.2, 6.5, 6.1, 6.4),
+  stringsAsFactors = FALSE
+)
+
+
+
+nitrate_flag_function <- function(messy) {
+  messy$nitrate_flag <- is.na(messy$nitrate)
+  
+  return(messy)
+  
+}
+
+nitrate_flag_function # adds new column "nitrate_flag" if nitrate is missing
+messy
+```
+
+Task 4:
+
+```{r}
+messy <- data.frame(
+  sample_id = c("S1", "S2", "S3", "S4"),
+  nitrate = c("12.1", "11.8", "missing", "13.0"),
+  ph = c(6.2, 6.5, 6.1, 6.4),
+  stringsAsFactors = FALSE
+)
+
+
+numeric_nitrate <- as.numeric(messy$nitrate)
+
+numeric_nitrate
+
+mean_nitrate <- mean(numeric_nitrate, na.rm = TRUE)
+
+mean_nitrate # returns mean of all nitrate values with all NAs removed
+```
+
+## Part C: Cleaning Names, Reshaping, and Summaries
+
+### Cleaning messy column names using regex (base R only)
+
+```{r}
+nm <- c(" Plot ID ", "Yield(kg/ha)", "Soil%Moisture", "2nd reading", "sensor.ID")
+```
+
+Task 1:
+
+```{r}
+nm <- c(" Plot ID ", "Yield(kg/ha)", "Soil%Moisture", "2nd reading", "sensor.ID")
+
+nm_trimmed_spaces <- trimws(nm) # Returns [1] "Plot ID"       "Yield(kg/ha)"  "Soil%Moisture" "2nd reading"   "sensor.ID"    
+
+nm_lower <- tolower(nm_trimmed_spaces) # Returns [1] "plot id"       "yield(kg/ha)"  "soil%moisture" "2nd reading"   "sensor.id"  
+
+nm_punctuation <- gsub("[[:punct:][:space:]]", "_", nm_lower) # Returns [1] "plot_id"       "yield_kg_ha_"  "soil_moisture" "2nd_reading"   "sensor_id" 
+
+nm_underscore <- gsub("_+", "_", nm_punctuation) # Returns [1] "plot_id"       "yield_kg_ha_"  "soil_moisture" "2nd_reading"   "sensor_id" 
+
+nm_clean <- gsub("^([[:digit:]])", "x_\\1", nm_underscore) # Returns [1] "plot_id"       "yield_kg_ha_"  "soil_moisture" "x_2nd_reading" "sensor_id" 
+
+nm_clean
+```
+
+Regex choices explanation: The use of "\[:punct\]", "\[:space:\]" and "\[:digit:\]" allows us to filter through any spaces and punctuation. These are pre determined classes that are given to us by R. "\^" is a quantifier that selects everything that is not said pattern and "+" is a quantifier that matches one or more times.
+
+### Wide → long (base R only), then grouped summaries
+
+```{r}
+set.seed(21)
+wide <- data.frame(
+plot = paste0("P", 1:6),
+y_2024 = rnorm(6, 5.0, 0.6),
+y_2025 = rnorm(6, 5.4, 0.6),
+y_2026 = rnorm(6, 5.2, 0.6)
+)
+```
+
+Task 1:
+
+```{r}
+set.seed(21)
+wide <- data.frame(
+  plot = paste0("P", 1:6),
+  y_2024 = rnorm(6, 5.0, 0.6),
+  y_2025 = rnorm(6, 5.4, 0.6),
+  y_2026 = rnorm(6, 5.2, 0.6)
+)
+
+wide_reshape <- reshape(
+  wide,
+  varying = c("y_2024", "y_2025", "y_2026"),
+  v.names = "yield",
+  timevar = "year",
+  times = c(2024, 2025, 2026),
+  direction = "long"
+)
+
+wide_reshape 
+```
+
+Task 2: wide_reshape returns: plot year yield id 1.2024 P1 2024 4.529215 1 2.2024 P2 2024 4.744585 2 3.2024 P3 2024 5.235799 3 4.2024 P4 2024 5.022054 4 5.2024 P5 2024 4.380750 5 6.2024 P6 2024 4.241083 6 1.2025 P1 2025 5.263821 1 2.2025 P2 2025 5.847354 2 3.2025 P3 2025 5.599692 3 4.2025 P4 2025 4.725576 4 5.2025 P5 2025 4.976322 5 6.2025 P6 2025 4.963474 6 1.2026 P1 2026 4.099411 1 2.2026 P2 2026 4.955387 2 3.2026 P3 2026 5.216117 3 4.2026 P4 2026 5.746977 4 5.2026 P5 2026 6.180608 5 6.2026 P6 2026 5.236411 6
+
+Task 3:
+
+```{r}
+split_wide_reshape <- split(wide_reshape, wide_reshape$year)
+
+wide_stats <- lapply(split_wide_reshape, function(d) {
+  data.frame (
+    mean_yield = mean(d$yield),
+    sd_yield = sd(d$yield)
+  )
+})
+
+wide_stats_grouped <- do.call(rbind, wide_stats)
+
+wide_stats_grouped # Returns      mean_yield  sd_yield
+                             2024   4.692248 0.3831760
+                             2025   5.229373 0.4263266
+                             2026   5.239152 0.7105343
+```
+
+Task 4: In the case of the wide data frame, long formats are convenient in that they allow for better grouped summaries, plotting and modelling. This is because long formats have fewer columns, typically one measurement column plus a label column.
+
+### Long → wide with two value columns (tidyverse allowed)
+
+```{r}
+library(tidyr)
+long2 <- data.frame(
+id = rep(1:3, each = 2),
+time = rep(c("pre", "post"), times = 3),
+height = c(10, 12, 9, 11, 13, 14),
+weight = c(20, 22, 19, 21, 23, 24)
+)
+```
+
+Task 1:
+
+```{r}
+long2_wide <- long2 |>
+  pivot_wider(
+    names_from = time,
+    values_from = c(height, weight)
+  )
+
+long2_wide # Returns      id height_pre height_post weight_pre weight_post
+  <int>      <dbl>       <dbl>      <dbl>       <dbl>
+1     1         10          12         20          22
+2     2          9          11         19          21
+3     3         13          14         23          24
+```
+
+Task 2:
+
+```{r}
+library(tidyr)
+long2 <- data.frame(
+  id = rep(1:3, each = 2),
+  time = rep(c("pre", "post"), times = 3),
+  height = c(10, 12, 9, 11, 13, 14),
+  weight = c(20, 22, 19, 21, 23, 24)
+)
+
+long2_wide <- long2 |>
+  pivot_wider(
+    names_from = time,
+    values_from = c(height, weight)
+  )
+
+str(long2_wide) # Returns tibble [3 × 5] (S3: tbl_df/tbl/data.frame)
+ $ id         : int [1:3] 1 2 3
+ $ height_pre : num [1:3] 10 9 13
+ $ height_post: num [1:3] 12 11 14
+ $ weight_pre : num [1:3] 20 19 23
+ $ weight_post: num [1:3] 22 21 24
+```
+
+Task 3:
+
+```{r}
+library(tidyr)
+long2 <- data.frame(
+  id = rep(1:3, each = 2),
+  time = rep(c("pre", "post"), times = 3),
+  height = c(10, 12, 9, 11, 13, 14),
+  weight = c(20, 22, 19, 21, 23, 24)
+)
+
+long2_wide <- long2 |>
+  pivot_wider(
+    names_from = time,
+    values_from = c(height, weight)
+  )
+
+height_difference <- long2_wide$height_post - long2_wide$height_pre
+
+height_difference # returns [1] 2 2 1
+
+weight_difference <- long2_wide$weight_post - long2_wide$weight_pre
+
+weight_difference # returns [1] 2 2 1
+```
+
+## Part D: Joins, Keys, and Debugging
+
+### Fixing a join with inconsistent keys
+
+```{r}
+left_tbl <- data.frame(
+plot = c("P-01", "P-02", "P-03", "P-04"),
+yield = c(5.1, 5.4, 5.0, 5.6),
+stringsAsFactors = FALSE
+)
+right_tbl <- data.frame(
+plot = c("P01", "P02", "P03", "P05"),
+soil = c("clay", "silt", "sand", "peat"),
+stringsAsFactors = FALSE
+)
+```
+
+Task 1 and 2:
+
+```{r}
+left_tbl <- data.frame(
+  plot = c("P-01", "P-02", "P-03", "P-04"),
+  yield = c(5.1, 5.4, 5.0, 5.6),
+  stringsAsFactors = FALSE
+)
+right_tbl <- data.frame(
+  plot = c("P01", "P02", "P03", "P05"),
+  soil = c("clay", "silt", "sand", "peat"),
+  stringsAsFactors = FALSE
+)
+
+left_tbl$plot <- gsub("-", "", left_tbl$plot)
+
+merged_tbls <- merge(left_tbl, right_tbl, by = "plot")
+
+merged_tbls # Returns   plot yield soil
+1  P01   5.1 clay
+2  P02   5.4 silt
+3  P03   5.0 sand
+```
+
+Task 3 and 4: The missing plots are P-04 from left_tbl and P05 from right_tbl. When joint keys are inconsistent and are matched, matched data may be missing or inconsistent. Valid data can also be dropped if merged without proper standardisation. Because the data set would be incomplete, any calculation that could be made to the data cannot be made as the data would be missing or incorrect. \### Duplicate keys and unexpected row counts
+
+```{r}
+a <- data.frame(id = c(1, 2, 2, 3), score = c(10, 12, 13, 9))
+b <- data.frame(id = c(1, 2, 3, 3), group = c("X", "Y", "Y", "Z"))
+```
+
+Task 1:
+
+```{r}
+a <- data.frame(id = c(1, 2, 2, 3), score = c(10, 12, 13, 9))
+b <- data.frame(id = c(1, 2, 3, 3), group = c("X", "Y", "Y", "Z"))
+
+merged_ab <- merge(a, b, by = "id")
+
+merged_ab
+```
+
+Task 2: merged_ab outputs 5 rows:\
+id score group 1 1 10 X 2 2 12 Y 3 2 13 Y 4 3 9 Y 5 3 9 Z
+
+Task 3: The reason as to why the row count increased is because some IDs appeared multiple times and were merged. This causes rows to duplicate matches. Duplicates create multiple combinations which leads to the row count increasing.
+
+Task 4:
+
+```{r}
+a <- data.frame(id = c(1, 2, 2, 3), score = c(10, 12, 13, 9))
+b <- data.frame(id = c(1, 2, 3, 3), group = c("X", "Y", "Y", "Z"))
+
+aggregate_a <- aggregate(a$score, by = list(id = a$id), FUN = mean)
+aggregate_b <- aggregate(b$group, by = list(id = b$id), FUN = min)
+
+merged_aggregated_ab <- merge(aggregate_a, aggregate_b, by = "id")
+
+merged_aggregated_ab # Returns   id  x.x x.y
+1  1 10.0   X
+2  2 12.5   Y
+3  3  9.0   Y
+```
+
+### Plot coloured by a derived grouping
+
+Task 1:
+
+```{r}
+mtcars$car_name <- rownames(mtcars)
+eff_band <- function(x) {
+  if (x >= 20) {
+    "efficient"
+  }
+  else {
+    "inefficient"
+  }
+}
+
+apply_eff <- sapply(mtcars$mpg, eff_band)
+
+labels <- data.frame(car_names = mtcars$car_name,
+                     eff_band = apply_eff )
+
+labels
+```
+
+Task 2:
+
+```{r}
+mtcars$car_name <- rownames(mtcars)
+eff_band <- function(x) {
+  if (x >= 20) {
+    "efficient"
+  }
+  else {
+    "inefficient"
+  }
+}
+
+apply_eff <- sapply(mtcars$mpg, eff_band)
+
+labels <- data.frame(car_name = mtcars$car_name,
+                     eff_band = apply_eff )
+
+merged_eff <- merge(labels, mtcars, by = "car_name")
+
+merged_eff # Returns               car_name    eff_band  mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+1          AMC Javelin inefficient 15.2   8 304.0 150 3.15 3.435 17.30  0  0    3    2
+2   Cadillac Fleetwood inefficient 10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4
+3           Camaro Z28 inefficient 13.3   8 350.0 245 3.73 3.840 15.41  0  0    3    4
+4    Chrysler Imperial inefficient 14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+5           Datsun 710   efficient 22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+6     Dodge Challenger inefficient 15.5   8 318.0 150 2.76 3.520 16.87  0  0    3    2
+7           Duster 360 inefficient 14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+8         Ferrari Dino inefficient 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+9             Fiat 128   efficient 32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+10           Fiat X1-9   efficient 27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+11      Ford Pantera L inefficient 15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+12         Honda Civic   efficient 30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+13      Hornet 4 Drive   efficient 21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+14   Hornet Sportabout inefficient 18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2
+15 Lincoln Continental inefficient 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4
+16        Lotus Europa   efficient 30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+17       Maserati Bora inefficient 15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+18           Mazda RX4   efficient 21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+19       Mazda RX4 Wag   efficient 21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+20            Merc 230   efficient 22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+21           Merc 240D   efficient 24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+22            Merc 280 inefficient 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4
+23           Merc 280C inefficient 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4
+24          Merc 450SE inefficient 16.4   8 275.8 180 3.07 4.070 17.40  0  0    3    3
+25          Merc 450SL inefficient 17.3   8 275.8 180 3.07 3.730 17.60  0  0    3    3
+26         Merc 450SLC inefficient 15.2   8 275.8 180 3.07 3.780 18.00  0  0    3    3
+27    Pontiac Firebird inefficient 19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+28       Porsche 914-2   efficient 26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+29      Toyota Corolla   efficient 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+30       Toyota Corona   efficient 21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+31             Valiant inefficient 18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1
+32          Volvo 142E   efficient 21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
+```
+
+Task 3:
+
+```{r}
+mtcars$car_name <- rownames(mtcars)
+eff_band <- function(x) {
+  if (x >= 20) {
+    "efficient"
+  }
+  else {
+    "inefficient"
+  }
+}
+
+apply_eff <- sapply(mtcars$mpg, eff_band)
+
+labels <- data.frame(car_name = mtcars$car_name,
+                     eff_band = apply_eff )
+
+merged_eff <- merge(labels, mtcars, by = "car_name")
+
+merged_eff
+
+plot(merged_eff$wt, 
+     merged_eff$mpg, 
+     col = factor(merged_eff$eff_band),
+     xlab = "Weight",
+     ylab = "Miles Per Gallon")
+```
+
+Task 4:
+
+```{r}
+mtcars$car_name <- rownames(mtcars)
+eff_band <- function(x) {
+  if (x >= 20) {
+    "efficient"
+  }
+  else {
+    "inefficient"
+  }
+}
+
+apply_eff <- sapply(mtcars$mpg, eff_band)
+
+labels <- data.frame(car_name = mtcars$car_name,
+                     eff_band = apply_eff )
+
+merged_eff <- merge(labels, mtcars, by = "car_name")
+
+merged_eff
+
+plot(merged_eff$wt, 
+     merged_eff$mpg, 
+     col = factor(merged_eff$eff_band),
+     xlab = "Weight",
+     ylab = "Miles Per Gallon")
+
+legend("topright",
+       merged_eff$wt,
+       merged_eff$mpg,
+       legend = c("Weight", "Miles Per Gallon"))
+```
+
+## Part E: Functions, Lists and Structures
+
+### A robust summary function with input checks
+
+Task 1:
+
+```{r}
+summarise_cols <- function(df, cols) {
+  results <- data.frame()
+  column_check <- cols %in% names(df)
+  if (any(!column_check)) {
+    stop("Column not found")
+  }
+  for (col in cols) {
+    if (!is.numeric(df[[col]])) {
+      stop("Column is not numeric")
+    }
+    n <- sum(!is.na(df[[col]]))
+    column_mean <- mean(df[[col]], na.rm = TRUE)
+    column_sd <- sd(df[[col]], na.rm = TRUE)
+    na_count <- sum(is.na(df[[col]]))
+    new_row <- data.frame(variable = col,
+                          n = n,
+                          mean = column_mean,
+                          sd = column_sd,
+                          na_count = na_count)
+    results <- rbind(results, new_row)
+  }
+  return(results)
+}
+
+summarise_cols(mtcars, c("mpg", "hp", "wt")) # Returns   variable  n      mean         sd na_count
+1      mpg 32  20.09062  6.0269481        0
+2       hp 32 146.68750 68.5628685        0
+3       wt 32   3.21725  0.9784574        0
+```
+
+\[\[ is more safer than \$ as it requires exact column names. When you use \$ it will try to match which can cause incorrect data to be returned. \### Applying a function over a list of data frames Task 1:
+
+```{r}
+d1 <- iris[1:50, c("Sepal.Length", "Sepal.Width")]
+d2 <- iris[51:100, c("Sepal.Length", "Sepal.Width")]
+d3 <- iris[101:150, c("Sepal.Length", "Sepal.Width")]
+L <- list(d1, d2, d3)
+
+d1 <- iris[1:50, c("Sepal.Length", "Sepal.Width")]
+d2 <- iris[51:100, c("Sepal.Length", "Sepal.Width")]
+d3 <- iris[101:150, c("Sepal.Length", "Sepal.Width")]
+L <- list(d1, d2, d3)
+
+sepal_correlation <- lapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_correlation # Returns [[1]]
+[1] 0.7425467
+
+[[2]]
+[1] 0.5259107
+
+[[3]]
+[1] 0.4572278
+```
+
+Task 2:
+
+```{r}
+d1 <- iris[1:50, c("Sepal.Length", "Sepal.Width")]
+d2 <- iris[51:100, c("Sepal.Length", "Sepal.Width")]
+d3 <- iris[101:150, c("Sepal.Length", "Sepal.Width")]
+L <- list(d1, d2, d3)
+
+sepal_correlation <- lapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation <- sapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation # Returns [1] 0.7425467 0.5259107 0.4572278
+```
+
+Task 3:
+
+```{r}
+d1 <- iris[1:50, c("Sepal.Length", "Sepal.Width")]
+d2 <- iris[51:100, c("Sepal.Length", "Sepal.Width")]
+d3 <- iris[101:150, c("Sepal.Length", "Sepal.Width")]
+L <- list(d1, d2, d3)
+
+sepal_correlation <- lapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation <- sapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation
+
+combine_sepal <- do.call(rbind, L)
+
+combine_sepal # Returns     Sepal.Length Sepal.Width
+1            5.1         3.5
+2            4.9         3.0
+3            4.7         3.2
+4            4.6         3.1
+5            5.0         3.6
+6            5.4         3.9
+7            4.6         3.4
+8            5.0         3.4
+9            4.4         2.9
+10           4.9         3.1
+11           5.4         3.7
+12           4.8         3.4
+13           4.8         3.0
+14           4.3         3.0
+15           5.8         4.0
+16           5.7         4.4
+17           5.4         3.9
+18           5.1         3.5
+19           5.7         3.8
+20           5.1         3.8
+21           5.4         3.4
+22           5.1         3.7
+23           4.6         3.6
+24           5.1         3.3
+25           4.8         3.4
+26           5.0         3.0
+27           5.0         3.4
+28           5.2         3.5
+29           5.2         3.4
+30           4.7         3.2
+31           4.8         3.1
+32           5.4         3.4
+33           5.2         4.1
+34           5.5         4.2
+35           4.9         3.1
+36           5.0         3.2
+37           5.5         3.5
+38           4.9         3.6
+39           4.4         3.0
+40           5.1         3.4
+41           5.0         3.5
+42           4.5         2.3
+43           4.4         3.2
+44           5.0         3.5
+45           5.1         3.8
+46           4.8         3.0
+47           5.1         3.8
+48           4.6         3.2
+49           5.3         3.7
+50           5.0         3.3
+51           7.0         3.2
+52           6.4         3.2
+53           6.9         3.1
+54           5.5         2.3
+55           6.5         2.8
+56           5.7         2.8
+57           6.3         3.3
+58           4.9         2.4
+59           6.6         2.9
+60           5.2         2.7
+61           5.0         2.0
+62           5.9         3.0
+63           6.0         2.2
+64           6.1         2.9
+65           5.6         2.9
+66           6.7         3.1
+67           5.6         3.0
+68           5.8         2.7
+69           6.2         2.2
+70           5.6         2.5
+71           5.9         3.2
+72           6.1         2.8
+73           6.3         2.5
+74           6.1         2.8
+75           6.4         2.9
+76           6.6         3.0
+77           6.8         2.8
+78           6.7         3.0
+79           6.0         2.9
+80           5.7         2.6
+81           5.5         2.4
+82           5.5         2.4
+83           5.8         2.7
+84           6.0         2.7
+85           5.4         3.0
+86           6.0         3.4
+87           6.7         3.1
+88           6.3         2.3
+89           5.6         3.0
+90           5.5         2.5
+91           5.5         2.6
+92           6.1         3.0
+93           5.8         2.6
+94           5.0         2.3
+95           5.6         2.7
+96           5.7         3.0
+97           5.7         2.9
+98           6.2         2.9
+99           5.1         2.5
+100          5.7         2.8
+101          6.3         3.3
+102          5.8         2.7
+103          7.1         3.0
+104          6.3         2.9
+105          6.5         3.0
+106          7.6         3.0
+107          4.9         2.5
+108          7.3         2.9
+109          6.7         2.5
+110          7.2         3.6
+111          6.5         3.2
+112          6.4         2.7
+113          6.8         3.0
+114          5.7         2.5
+115          5.8         2.8
+116          6.4         3.2
+117          6.5         3.0
+118          7.7         3.8
+119          7.7         2.6
+120          6.0         2.2
+121          6.9         3.2
+122          5.6         2.8
+123          7.7         2.8
+124          6.3         2.7
+125          6.7         3.3
+126          7.2         3.2
+127          6.2         2.8
+128          6.1         3.0
+129          6.4         2.8
+130          7.2         3.0
+131          7.4         2.8
+132          7.9         3.8
+133          6.4         2.8
+134          6.3         2.8
+135          6.1         2.6
+136          7.7         3.0
+137          6.3         3.4
+138          6.4         3.1
+139          6.0         3.0
+140          6.9         3.1
+141          6.7         3.1
+142          6.9         3.1
+143          5.8         2.7
+144          6.8         3.2
+145          6.7         3.3
+146          6.7         3.0
+147          6.3         2.5
+148          6.5         3.0
+149          6.2         3.4
+150          5.9         3.0
+```
+
+Task 4:
+
+```{r}
+d1 <- iris[1:50, c("Sepal.Length", "Sepal.Width")]
+d2 <- iris[51:100, c("Sepal.Length", "Sepal.Width")]
+d3 <- iris[101:150, c("Sepal.Length", "Sepal.Width")]
+L <- list(d1, d2, d3)
+
+sepal_correlation <- lapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation <- sapply(L, function(x) {
+  cor(x$Sepal.Length, x$Sepal.Width)
+})
+
+sepal_numeric_correlation
+
+combine_sepal <- do.call(rbind, L)
+
+combined_correlation <- cor(combine_sepal$Sepal.Width, combine_sepal$Sepal.Length)
+
+combined_correlation
+```
+
+Task 5: do.call allows for functions to be executed dynamically. Instead of writing out multiple arguments, do.call will take multiple arguments and apply that function onto them. In this case, do.call(rbind, ...) lets R combine the given arguments into a data frame. \### Matrix vs data frame behaviour
+
+```{r}
+M <- matrix(1:12, nrow = 3, byrow = TRUE)
+colnames(M) <- c("A", "B", "C", "D")
+```
+
+Task 1:
+
+```{r}
+M <- matrix(1:12, nrow = 3, byrow = TRUE)
+colnames(M) <- c("A", "B", "C", "D")
+
+M_DF <- as.data.frame(M)
+
+M_DF
+```
+
+Task 2:
+
+```{r}
+M <- matrix(1:12, nrow = 3, byrow = TRUE)
+colnames(M) <- c("A", "B", "C", "D")
+
+M_DF <- as.data.frame(M)
+
+M_DF$band <- factor(c("low", "high", "low"))
+```
+
+Task 3:
+
+```{r}
+M <- matrix(1:12, nrow = 3, byrow = TRUE)
+colnames(M) <- c("A", "B", "C", "D")
+
+M_DF <- as.data.frame(M)
+
+M_DF$band <- factor(c("low", "high", "low"))
+
+
+colSums(M) # Returns  A  B  C  D 
+                      15 18 21 24 
+
+                      
+colSums(M_DF) # Returns Error in colSums(M_DF) : 'x' must be numeric or complex
+```
+
+Task 4: Matrices must be homogeneous as they can only hold one class of data types whereas data frames can be heterogeneous as they can hold multiple data types. This means that certain functions like *colSums* will fail if there are any non numeric columns.
+
+## Part F: Intro Statistics (Applied)
+
+### Sampling distribution by simulation
+
+```{r}
+set.seed(202)
+pop <- rexp(5000, rate = 1/10) # skewed population
+```
+
+Task 1:
+
+```{r}
+set.seed(202)
+pop <- rexp(5000, rate = 1/10) # skewed population
+
+sample_mean_200 <- replicate(200, mean(sample(pop, size = 10, replace = TRUE)))
+
+sample_mean_200
+```
+
+Task 2:
+
+```{r}
+set.seed(202)
+pop <- rexp(5000, rate = 1/10) # skewed population
+
+sample_mean_200 <- replicate(200, mean(sample(pop, size = 10, replace = TRUE)))
+
+sample_mean_40 <- replicate(200, mean(sample(pop, size = 40, replace = TRUE)))
+
+
+sample_mean_200
+sample_mean_40
+```
+
+Task 3:
+
+```{r}
+set.seed(202)
+pop <- rexp(5000, rate = 1/10) # skewed population
+
+sample_mean_200 <- replicate(200, mean(sample(pop, size = 10, replace = TRUE)))
+
+sample_mean_40 <- replicate(200, mean(sample(pop, size = 40, replace = TRUE)))
+
+hist(sample_mean_200,
+     main = "Histogram of Sample Means (n = 10)")
+
+hist(sample_mean_40,
+     main = "Histogram of Sample Means (n = 40)")
+```
+
+Task 4: In the histogram for n = 10, we can see that the histogram curves quite early in the graphic whereas in the n = 40 graphic, it has a more normal distribution. This is because as the sample size increases, the distribution becomes more symmetric due to Central Limit Theorem. In Central Limit Theorem, increasing the sample size leads to making the sample means more consistent.
+
+### Confidence interval from scratch (no t.test())
+
+```{r}
+set.seed(77)
+x <- rnorm(18, mean = 5.5, sd = 1.2)
+```
+
+Task 1:
+
+```{r}
+set.seed(77)
+x <- rnorm(18, mean = 5.5, sd = 1.2)
+
+n <- 18
+sm_mean <- mean(x)
+sm_sd <- sd(x)
+sm_df <- n - 1
+sm_t_crit <- qt(p = 0.95, df = sm_df)
+
+sm_CI <- sm_mean + c(1, 1) * sm_t_crit * (sm_sd / sqrt(n))
+
+sm_CI # Returns [1] 6.35511 6.35511
+```
+
+Task 2:
+
+```{r}
+set.seed(77)
+x <- rnorm(18, mean = 5.5, sd = 1.2)
+
+n <- 18
+sm_mean <- mean(x)
+sm_sd <- sd(x)
+sm_df <- n - 1
+sm_t_crit <- qt(p = 0.95, df = sm_df)
+
+sm_CI <- sm_mean + c(1, 1) * sm_t_crit * (sm_sd / sqrt(n))
+
+sm_CI
+
+t.test(x) # Returns data:  x
+t = 18.568, df = 17, p-value = 1.005e-12
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ 5.150437 6.470967
+sample estimates:
+mean of x 
+ 5.810702
+ 
+```
+
+Task 3: Confidence intervals creates a range in which uncertainty can fall into. Instead of relying on a single point of estimation, confidence intervals can allow us to understand possible values.
+
+### Two-sample comparison with checking assumptions (lightweight)
+
+```{r}
+set.seed(88)
+A <- rnorm(20, mean = 50, sd = 6)
+B <- rnorm(22, mean = 54, sd = 9)
+```
+
+Task 1:
+
+```{r}
+set.seed(88)
+A <- rnorm(20, mean = 50, sd = 6)
+B <- rnorm(22, mean = 54, sd = 9)
+
+combined_a_b <- cbind(A, B)
+
+boxplot(combined_a_b, beside = T)
+```
+
+Task 2:
+
+```{r}
+set.seed(88)
+A <- rnorm(20, mean = 50, sd = 6)
+B <- rnorm(22, mean = 54, sd = 9)
+
+
+mean_A <- mean(A) # Returns [1] 50.47656
+sd_A <- sd(A) # Returns [1] 6.415223
+
+mean_B <- mean(B) # Returns [1] 51.90565
+sd_B <- sd(B) # Returns [1] 8.170942
+```
+
+Task 3:
+
+```{r}
+set.seed(88)
+A <- rnorm(20, mean = 50, sd = 6)
+B <- rnorm(22, mean = 54, sd = 9)
+
+t.test(A, B) # Returns data:  A and B
+t = -0.63328, df = 39.209, p-value = 0.5302
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -5.992835  3.134642
+sample estimates:
+mean of x mean of y 
+ 50.47656  51.90565 
+```
+
+Task 4: Equal variance is when different samples share similar spread and variance around their means. Equal variance for A and B are implausible as the mean differ from each other. Instead of a pooled two sample test, Welch's test is more appropriate as it doesn't assume equal variances.
+
+### Relevel a factor and interpret coefficients
+Task 1:
+```{r}
+virginica_ref <- relevel(iris$Species, "virginica")
+```
+Task 2:
+```{r}
+virginica_ref <- relevel(iris$Species, "virginica")
+
+virginica_model <- lm(iris$Sepal.Length ~ virginica_ref, iris)
+```
+Task 3:
+```{r}
+virginica_ref <- relevel(iris$Species, "virginica")
+
+virginica_model <- lm(iris$Sepal.Length ~ virginica_ref, iris)
+
+virginica_coeffecient <- summary(virginica_model) # Returns Call:
+lm(formula = iris$Sepal.Length ~ virginica_ref, data = iris)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.6880 -0.3285 -0.0060  0.3120  1.3120 
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               6.5880     0.0728  90.492  < 2e-16 ***
+virginica_refsetosa      -1.5820     0.1030 -15.366  < 2e-16 ***
+virginica_refversicolor  -0.6520     0.1030  -6.333 2.77e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.5148 on 147 degrees of freedom
+Multiple R-squared:  0.6187,	Adjusted R-squared:  0.6135 
+F-statistic: 119.3 on 2 and 147 DF,  p-value: < 2.2e-16
+```
+Task 4:
+Reference levels affect the interpretation of coefficients by determining which categories will be the baseline. The reference level is taken as a baseline and coefficients show the differences from the baseline. It allows for the significance of levels to be assessed.
+
+### A small end-to-end workflow
+```{r}
+set.seed(909)
+trial <- data.frame(
+plot = rep(paste0("P", 1:12), each = 2),
+treatment = rep(c("control", "treated"), times = 12),
+yield = rnorm(24, mean = 5.0, sd = 0.5)
+)
+trial$yield[trial$treatment == "treated"] <- trial$yield[trial$treatment == "treated"] + 0.3
+```
+Task 1:
+```{r}
+set.seed(909)
+trial <- data.frame(
+  plot = rep(paste0("P", 1:12), each = 2),
+  treatment = rep(c("control", "treated"), times = 12),
+  yield = rnorm(24, mean = 5.0, sd = 0.5)
+)
+trial$yield[trial$treatment == "treated"] <- trial$yield[trial$treatment == "treated"] + 0.3
+
+treatment_ref <- relevel(factor(trial$treatment), "control")
+```
+Task 2:
+```{r}
+set.seed(909)
+trial <- data.frame(
+  plot = rep(paste0("P", 1:12), each = 2),
+  treatment = rep(c("control", "treated"), times = 12),
+  yield = rnorm(24, mean = 5.0, sd = 0.5)
+)
+trial$yield[trial$treatment == "treated"] <- trial$yield[trial$treatment == "treated"] + 0.3
+
+treatment_ref <- relevel(factor(trial$treatment), "control")
+
+treatment_mean <- tapply(trial$yield, trial$treatment, FUN = mean)
+```
+Task 3:
+```{r}
+set.seed(909)
+trial <- data.frame(
+  plot = rep(paste0("P", 1:12), each = 2),
+  treatment = rep(c("control", "treated"), times = 12),
+  yield = rnorm(24, mean = 5.0, sd = 0.5)
+)
+trial$yield[trial$treatment == "treated"] <- trial$yield[trial$treatment == "treated"] + 0.3
+
+treatment_ref <- relevel(factor(trial$treatment), "control")
+
+treatment_mean <- tapply(trial$yield, trial$treatment, FUN = mean)
+
+boxplot(trial$yield ~ trial$treatment)
+```
+Task 4:
+```{r}
+set.seed(909)
+trial <- data.frame(
+  plot = rep(paste0("P", 1:12), each = 2),
+  treatment = rep(c("control", "treated"), times = 12),
+  yield = rnorm(24, mean = 5.0, sd = 0.5)
+)
+trial$yield[trial$treatment == "treated"] <- trial$yield[trial$treatment == "treated"] + 0.3
+
+treatment_ref <- relevel(factor(trial$treatment), "control")
+
+treatment_mean <- tapply(trial$yield, trial$treatment, FUN = mean)
+
+boxplot(trial$yield ~ trial$treatment)
+
+treatment_lm <- lm(trial$yield ~ trial$treatment)
+
+treatment_lm
+```
+In the linear model, the coefficients show the difference in mean yield within different groups.
+
+Task 5:
+This model is close to a 2 sample t test because it compares the means of independent groups. You would use a 2 sample t test if you want to see if μ1−μ2=0 which would relate to β in the formula for simple regression (yi=α+βxi+εi,εi∼N(0,σ2)). 
